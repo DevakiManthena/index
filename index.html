@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SalesTrack</title>
+<style>
+  body { font-family: Arial, sans-serif; background:#f4f4f4; padding:20px; }
+  h1,h2 { text-align:center; color:#1a4d8f; }
+  .container { max-width:1000px; margin:auto; background:white; padding:20px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
+  label { display:block; margin-top:10px; font-weight:bold; }
+  input,select { width:100%; padding:10px; border-radius:5px; border:1px solid #ccc; }
+  button { margin-top:20px; padding:10px 20px; background:#1a4d8f; color:white; border:none; border-radius:5px; cursor:pointer; }
+  button:hover { opacity:0.9; }
+  .result-box { margin-top:20px; background:#e8f0ff; padding:20px; border-radius:5px; border-left:5px solid #1a4d8f; }
+  .dark-mode { background:#111 !important; color:white !important; }
+  .dark-box { background:#222 !important; border-left:5px solid #69a8ff !important; }
+</style>
+</head>
+<body>
+<h1>SalesTrack</h1>
+<h2>Smart Sales Analytics & Performance Tracking</h2>
+
+<div class="container" id="mainBox">
+<h2>Enter Sales Transaction</h2>
+
+<label>Product Name</label>
+<input id="product" type="text" placeholder="e.g., Laptop" />
+
+<label>Region</label>
+<select id="region">
+  <option>North</option>
+  <option>South</option>
+  <option>East</option>
+  <option>West</option>
+</select>
+
+<label>Salesperson</label>
+<input id="person" type="text" placeholder="e.g., John" />
+
+<label>Sale Amount (₹)</label>
+<input id="amount" type="number" placeholder="e.g., 50000" />
+
+<button onclick="addSale()">Add Sale</button>
+<button onclick="toggleDark()">Toggle Dark/Light Mode</button>
+
+<div id="results" class="result-box" style="display:none"></div>
+
+<h2>Analytics Dashboard</h2>
+<canvas id="salesChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let salesData = [];
+let alertShown = false;
+let chart;
+
+function addSale() {
+  const product = document.getElementById('product').value;
+  const region = document.getElementById('region').value;
+  const person = document.getElementById('person').value;
+  const amount = parseFloat(document.getElementById('amount').value);
+
+  if(!product || !person || !amount) { alert("Please fill all fields."); return; }
+
+  salesData.push({ product, region, person, amount });
+
+  const total = salesData.reduce((a,b)=>a+b.amount,0);
+
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('results').innerHTML = `
+    <h3>Latest Entry Added</h3>
+    <p><b>Product:</b> ${product}</p>
+    <p><b>Region:</b> ${region}</p>
+    <p><b>Salesperson:</b> ${person}</p>
+    <p><b>Amount:</b> ₹${amount}</p>
+    <h3>Total Sales: ₹${total}</h3>
+  `;
+
+  if(total > 200000 && !alertShown) { alertShown = true; alert("🎯 Target Achieved! Total sales crossed ₹2,00,000"); }
+
+  updateChart();
+}
+
+function updateChart(){
+  const ctx = document.getElementById('salesChart');
+  const regions = ['North','South','East','West'];
+  const totals = regions.map(r => salesData.filter(s=>s.region===r).reduce((a,b)=>a+b.amount,0));
+
+  if(chart) chart.destroy();
+
+  chart = new Chart(ctx, {
+    type:'bar',
+    data:{ labels:regions, datasets:[{ label:'Sales by Region', data:totals }] }
+  });
+}
+
+function toggleDark(){
+  document.body.classList.toggle('dark-mode');
+  document.getElementById('mainBox').classList.toggle('dark-box');
+}
+</script>
+
+</body>
+</html>
